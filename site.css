@@ -2058,7 +2058,7 @@ a:hover {
   padding-left: 0;
 }
 
-.app-kop .link-knop, .afspraak-portaal .link-knop {
+.app-kop .link-knop {
   align-items: center;
   font-size: 16px;
   display: inline-flex;
@@ -2338,13 +2338,49 @@ a:hover {
   accent-color: var(--groen-donker);
 }
 
-.afspraak-portaal {
-  grid-template-columns: auto 1fr;
-  align-items: center;
+.aanvraag-stappen .inlog-stappen {
+  text-align: center;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  display: grid;
 }
 
-.afspraak-portaal :is(h2, p) {
-  grid-column: 1 / -1;
+.aanvraag-stappen .inlog-stappen li {
+  flex-direction: column;
+}
+
+.aanvraag-stap {
+  gap: 14px;
+  display: grid;
+}
+
+.aanvraag-stap h2 {
+  margin: 0;
+  font-size: clamp(20px, 4vw, 25px);
+  line-height: 1.2;
+}
+
+.aanvraag-route {
+  border-bottom: 1px solid var(--lijn);
+  gap: 8px;
+  padding: 10px 0;
+  display: grid;
+}
+
+.aanvraag-stap > .link-knop {
+  justify-self: start;
+}
+
+.aanvraag-stap .velden {
+  gap: 9px;
+}
+
+.aanvraag-stap .veld .hulp {
+  font-size: 14px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .inlog-wissel {
@@ -2462,10 +2498,6 @@ a:hover {
     gap: 0;
     padding: 4px;
     font-size: 13px;
-  }
-
-  .afspraak-portaal {
-    grid-template-columns: 1fr;
   }
 }
 

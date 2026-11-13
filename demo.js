@@ -4,6 +4,12 @@
                                                              
 
 const velden = ['soort', 'naam', 'email', 'tel', 'voorkeur']         ;
+const aanvraagStappen                                           = [
+  ['soort'],
+  [],
+  ['naam', 'email', 'tel'],
+  ['voorkeur'],
+];
 
 const meldingen                                 = {
   soort: 'Kies eerst een soort afspraak.',
@@ -44,6 +50,7 @@ menu?.addEventListener('keydown', (event) => {
 
 const form = document.querySelector('#demo-aanvraag');
 if (form) {
+  let stap = 0;
   const gekozen = new URLSearchParams(location.search).get('soort');
   if (gekozen === 'eerste' || gekozen === 'vervolg') {
     form.querySelector(`[data-soort="${gekozen}"]`).checked = true;
@@ -53,6 +60,16 @@ if (form) {
   const invoer = (naam) => naam === 'soort'
     ? form.querySelector('[data-soort]')
     : document.getElementById(`afs-${naam}`);
+
+  function gaNaar(nummer) {
+    stap = nummer;
+    form.querySelectorAll('[data-aanvraag-stap]').forEach((paneel) => paneel.hidden = Number(paneel.dataset.aanvraagStap) !== stap);
+    form.querySelectorAll('.inlog-stappen li').forEach((item, index) => {
+      if (index === stap) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+    document.getElementById(`aanvraag-kop-${stap}`).focus();
+  }
 
   function toonFout(naam, melding) {
     foutElement(naam).textContent = melding ?? '';
@@ -65,6 +82,10 @@ if (form) {
     if (velden.includes(naam)) toonFout(naam);
   });
 
+  for (const terug of form.querySelectorAll('[data-aanvraag-terug]')) {
+    terug.addEventListener('click', () => gaNaar(Number(terug.dataset.aanvraagTerug)));
+  }
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const aanvraag = {
@@ -75,10 +96,21 @@ if (form) {
       voorkeur: invoer('voorkeur').value,
     };
     const fouten = controleer(aanvraag);
-    velden.forEach((naam) => toonFout(naam, fouten[naam]));
-    const eersteFout = velden.find((naam) => fouten[naam]);
+    const controle = stap === aanvraagStappen.length - 1 ? velden : aanvraagStappen[stap];
+    controle.forEach((naam) => toonFout(naam, fouten[naam]));
+    const eersteFout = controle.find((naam) => fouten[naam]);
     if (eersteFout) {
+      const foutStap = aanvraagStappen.findIndex((stapVelden) => stapVelden.includes(eersteFout));
+      if (stap !== foutStap) gaNaar(foutStap);
       invoer(eersteFout).focus();
+      return;
+    }
+
+    if (stap === 0) {
+      form.querySelector('[data-account-route]').href = './portaal.html?doel=boeken&soort=' + aanvraag.soort;
+    }
+    if (stap < aanvraagStappen.length - 1) {
+      gaNaar(stap + 1);
       return;
     }
 
@@ -93,7 +125,7 @@ if (form) {
     bevestiging.querySelector('h1').focus();
   });
 
-  form.querySelector('button[type=submit]').disabled = false;
+  form.querySelectorAll('button[type=submit]').forEach((knop) => knop.disabled = false);
 }
 
 {
@@ -272,6 +304,7 @@ if (form) {
     }
 
     $('#portaal-kop').textContent = titel;
+    if (parameters.get('soort') === 'eerste') $('input[name="demo-type"][value="Eerste afspraak"]').checked = true;
     $('#portaal-email').value = praktijk ? 'sjors@voorbeeld.test' : 'anna@voorbeeld.test';
     $(`[data-rol="${praktijk ? 'praktijk' : 'patient'}"]`).setAttribute('aria-current', 'page');
     inlogStap(false);
