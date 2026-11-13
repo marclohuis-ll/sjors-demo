@@ -37,6 +37,35 @@ function controleer(a          )         {
   return f;
 }
 
+const datum = (waarde        ) => new Date(waarde).toISOString().replace(/[-:]|\.\d{3}/g, '');
+const tekst = (waarde        ) => waarde.replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/([;,])/g, '\\$1');
+const encoder = new TextEncoder();
+
+function agendaBestand({ id, start, eind, url, adres }
+
+ ) {
+  const regels = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fysiotherapie Heuvels//Afspraken//NL',
+    'BEGIN:VEVENT', `UID:${id}@fysiotherapie-heuvels`, `DTSTAMP:${datum(new Date().toISOString())}`,
+    `DTSTART:${datum(start)}`, `DTEND:${datum(eind)}`, 'SUMMARY:Afspraak bij Fysiotherapie Heuvels',
+    ...(adres ? [`LOCATION:${tekst(adres)}`] : []), `URL:${url}`, 'END:VEVENT', 'END:VCALENDAR',
+  ];
+  return regels.map((regel) => {
+    let resultaat = '';
+    let lengte = 0;
+    for (const teken of regel) {
+      const bytes = encoder.encode(teken).length;
+      if (lengte + bytes > 75) {
+        resultaat += '\r\n ';
+        lengte = 1;
+      }
+      resultaat += teken;
+      lengte += bytes;
+    }
+    return resultaat;
+  }).join('\r\n') + '\r\n';
+}
+
 const menu = document.querySelector('details.inhoud');
 menu?.addEventListener('click', (event) => {
   if (event.target.closest('a')) menu.open = false;
@@ -134,7 +163,7 @@ if (form) {
     const parameters = new URLSearchParams(location.search);
     const praktijk = parameters.get('rol') === 'praktijk';
     const voorbeeldcode = '123456';
-    const opslag = 'sjors-demo-afspraken-v2';
+    const opslag = 'sjors-demo-afspraken-v3';
     const $ = (selector) => portaal.querySelector(selector);
     const emailForm = $('#portaal-email-stap');
     const codeForm = $('#portaal-code-stap');
@@ -161,10 +190,6 @@ if (form) {
       return resultaat;
     }
 
-    const dagSleutel = (afstand) => {
-      const waarde = datum(afstand);
-      return [waarde.getFullYear(), waarde.getMonth() + 1, waarde.getDate()].join('-');
-    };
 
     function scherm(naam) {
       for (const deel of portaal.querySelectorAll('[data-scherm]')) deel.hidden = deel.dataset.scherm !== naam;
@@ -193,6 +218,95 @@ if (form) {
       try { sessionStorage.setItem(opslag, JSON.stringify(aanvragen)); } catch { /* De huidige pagina blijft bruikbaar. */ }
     }
 
+    function voorbeeldMoment(afstand, tijd) {
+      const dag = datum(afstand);
+      const [uren, minuten] = tijd.split(':').map(Number);
+      dag.setHours(uren, minuten, 0, 0);
+      return { start: dag.toISOString(), moment: `${datumTekst.format(dag)} om ${tijd} uur` };
+    }
+
+    function bezoek(afspraak) {
+      const paneel = document.createElement('div');
+      paneel.className = 'app-blok';
+      paneel.innerHTML = `
+        <button type="button" class="knop-lijn app-knop">Zet in mijn agenda</button>
+        <details class="bezoek-blok">
+          <summary>Zo kom je binnen</summary>
+          <div class="app-blok">
+            <figure><img src="./fotos/ingang.jpg" alt="Voorbeeld van de ingang" width="600" height="340" loading="lazy">
+            <figcaption class="hulp">Voorbeeldfoto en voorbeeldinstructies</figcaption></figure>
+            <dl class="bezoek-gegevens">
+              <div><dt>Parkeren</dt><dd>Parkeer op de oprit.</dd></div>
+              <div><dt>Aanbellen</dt><dd>Gebruik de bel bij de zijdeur.</dd></div>
+            </dl>
+          </div>
+        </details>
+        <details class="bezoek-blok">
+          <summary>Voorbeeld van je herinnering</summary>
+          <p>Je afspraak komt eraan.</p>
+          <a href="#portaal-afspraken">Bekijk je afspraak</a> · <a href="#demo-route">Bekijk de route en ingang</a>
+        </details>`;
+      const route = paneel.querySelector('details');
+      paneel.querySelector('a[href="#demo-route"]').addEventListener('click', (event) => {
+        event.preventDefault();
+        route.open = true;
+        route.querySelector('summary').focus();
+      });
+      paneel.querySelector('button').addEventListener('click', () => {
+        const eind = new Date(Date.parse(afspraak.start) + (afspraak.soort === 'Eerste afspraak' ? 45 : 30) * 60000);
+        const bestand = agendaBestand({ id: afspraak.id, start: afspraak.start, eind: eind.toISOString(), url: location.href });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([bestand], { type: 'text/calendar' }));
+        link.download = 'afspraak.ics';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      });
+      return paneel;
+    }
+
+    function wachtlijstForm(afspraak) {
+      const details = document.createElement('details');
+      details.className = 'bezoek-blok';
+      details.innerHTML = `<summary>${afspraak.dagdelen?.length ? 'Wachtlijstvoorkeur aanpassen' : 'Op de wachtlijst voor een eerder plekje'}</summary>
+        <form class="app-blok"><fieldset class="app-veldset"><legend>Welke dagdelen passen?</legend></fieldset>
+        <button class="knop app-knop" type="submit">Voorkeur opslaan</button><p role="status"></p></form>`;
+      const form = details.querySelector('form');
+      const veldset = form.querySelector('fieldset');
+      for (const [index, naam] of ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'].entries()) {
+        const rij = document.createElement('div');
+        rij.className = 'wachtlijst-dag';
+        rij.innerHTML = `<span>${naam}</span>` + ['Ochtend', 'Middag'].map((deel, nummer) => {
+          const waarde = index * 2 + nummer;
+          return `<label><input type="checkbox" name="deel" value="${waarde}" aria-label="${naam} ${deel.toLowerCase()}"
+            ${afspraak.dagdelen?.includes(waarde) ? 'checked' : ''}> ${deel}</label>`;
+        }).join('');
+        veldset.append(rij);
+      }
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        afspraak.dagdelen = new FormData(form).getAll('deel').map(Number);
+        if (!aanvragen.includes(afspraak)) aanvragen.push(afspraak);
+        if (!afspraak.dagdelen.length) delete afspraak.aanbod;
+        bewaar();
+        form.querySelector('[role="status"]').textContent = afspraak.dagdelen.length
+          ? 'Je wachtlijstvoorkeur is opgeslagen.' : 'Je staat niet op de wachtlijst.';
+      });
+      return details;
+    }
+
+    function eerderVoorstel(afspraak) {
+      for (let afstand = 1; afstand <= 14; afstand++) {
+        const dag = datum(afstand).getDay();
+        if (dag < 1 || dag > 5) continue;
+        for (const [nummer, tijd] of ['09:00', '14:00'].entries()) {
+          const voorstel = voorbeeldMoment(afstand, tijd);
+          if (voorstel.start < afspraak.start && afspraak.dagdelen.includes((dag - 1) * 2 + nummer) &&
+            !aanvragen.some((a) => a.start === voorstel.start)) return voorstel;
+        }
+      }
+      return null;
+    }
+
     function groep(titel, afspraken, leeg) {
       const sectie = document.createElement('section');
       sectie.className = 'app-blok';
@@ -217,6 +331,29 @@ if (form) {
         const type = document.createElement('p');
         type.textContent = praktijk ? `Anna de Vries · ${afspraak.soort}` : afspraak.soort;
         kaart.append(status, moment, type);
+        if (!praktijk && afspraak.status === 'bevestigd' && afspraak.start && Date.parse(afspraak.start) > Date.now()) {
+          kaart.append(bezoek(afspraak), wachtlijstForm(afspraak));
+          if (afspraak.aanbod) {
+            const voorstel = document.createElement('p');
+            voorstel.textContent = `Een eerder plekje op ${afspraak.aanbod.moment}`;
+            const wissel = document.createElement('button');
+            wissel.type = 'button';
+            wissel.className = 'knop app-knop';
+            wissel.textContent = 'Wissel naar dit tijdstip';
+            wissel.addEventListener('click', () => {
+              if (Date.parse(afspraak.aanbod.start) <= Date.now() || aanvragen.some((a) => a.start === afspraak.aanbod.start)) {
+                voorstel.textContent = 'Dit tijdstip is niet meer vrij. Je afspraak blijft staan.';
+                return;
+              }
+              Object.assign(afspraak, afspraak.aanbod);
+              delete afspraak.aanbod;
+              delete afspraak.dagdelen;
+              bewaar();
+              afsprakenScherm();
+            });
+            kaart.append(voorstel, wissel);
+          }
+        }
         if (praktijk && afspraak.status === 'aangevraagd') {
           const knop = document.createElement('button');
           knop.type = 'button';
@@ -237,11 +374,12 @@ if (form) {
 
     function afsprakenScherm() {
       const moment = (offset, tijd) => `${datumTekst.format(datum(offset))} om ${tijd} uur`;
-      const gepland = { moment: moment(3, '11:00'), soort: 'Vervolgafspraak', status: 'bevestigd' };
+      const gepland = { id: 'voorbeeld-gepland', ...voorbeeldMoment(10, '11:00'), soort: 'Vervolgafspraak', status: 'bevestigd' };
       const eerder = { moment: moment(-12, '10:00'), soort: 'Eerste afspraak', status: 'bevestigd' };
-      const voorbeeld = { moment: moment(2, '11:30'), soort: 'Eerste afspraak', status: 'aangevraagd' };
+      const voorbeeld = { id: 'voorbeeld-aanvraag', ...voorbeeldMoment(2, '11:30'), soort: 'Eerste afspraak', status: 'aangevraagd' };
       const wachtend = aanvragen.filter((a) => a.status === 'aangevraagd');
       const bevestigd = aanvragen.filter((a) => a.status === 'bevestigd');
+      const komende = [...bevestigd, ...(!bevestigd.some((a) => a.id === gepland.id) ? [gepland] : [])];
       $('#portaal-afspraken').textContent = praktijk ? 'Praktijkagenda van Sjors' : 'Mijn afspraken';
       $('#portaal-afspraken-uitleg').textContent = praktijk
         ? 'Bekijk je planning en bevestig de voorbeeldaanvragen.'
@@ -249,9 +387,38 @@ if (form) {
       $('[data-actie="plannen"]').hidden = praktijk;
       $('#portaal-lijsten').replaceChildren(
         praktijk ? groep('Te bevestigen', wachtend.length || bevestigd.length ? wachtend : [voorbeeld], 'Er wachten geen aanvragen op bevestiging.') : '',
-        groep(praktijk ? 'Gepland' : 'Komende afspraken', praktijk ? [...bevestigd, gepland] : [...aanvragen, gepland], ''),
+        groep(praktijk ? 'Gepland' : 'Komende afspraken', praktijk ? komende : [...wachtend, ...komende], ''),
         groep('Geschiedenis', [eerder], ''),
       );
+      if (praktijk) {
+        const lijst = groep('Wachtlijst', [], 'Er staat niemand op de wachtlijst.');
+        const ingeschreven = komende.filter((a) => a.dagdelen?.length);
+        if (ingeschreven.length) lijst.querySelector('p').remove();
+        for (const afspraak of ingeschreven) {
+          const kaart = document.createElement('article');
+          kaart.className = 'kaart';
+          const tekst = document.createElement('p');
+          const voorstel = afspraak.aanbod ?? eerderVoorstel(afspraak);
+          tekst.textContent = voorstel
+            ? `Anna de Vries · ${afspraak.aanbod ? 'Aangeboden' : 'Vrij'} op ${voorstel.moment}`
+            : 'Anna de Vries · Geen eerder passend tijdstip.';
+          kaart.append(tekst);
+          if (voorstel && !afspraak.aanbod) {
+            const knop = document.createElement('button');
+            knop.className = 'knop app-knop';
+            knop.type = 'button';
+            knop.textContent = 'Bied dit tijdstip aan';
+            knop.addEventListener('click', () => {
+              afspraak.aanbod = voorstel;
+              bewaar();
+              afsprakenScherm();
+            });
+            kaart.append(knop);
+          }
+          lijst.append(kaart);
+        }
+        $('#portaal-lijsten').append(lijst);
+      }
       scherm('afspraken');
     }
 
@@ -289,7 +456,7 @@ if (form) {
         knop.type = 'button';
         knop.className = 'knop-lijn app-knop';
         knop.textContent = tijd;
-        knop.disabled = aanvragen.some((a) => a.dag === dagSleutel(dag) && a.tijd === tijd);
+        knop.disabled = aanvragen.some((a) => a.start === voorbeeldMoment(dag, tijd).start);
         knop.setAttribute('aria-pressed', String(tijd === gekozenTijd));
         knop.addEventListener('click', () => {
           gekozenTijd = tijd;
@@ -338,7 +505,7 @@ if (form) {
         planner(3);
       },
       aanvragen: () => {
-        aanvragen.push({ dag: dagSleutel(dag), tijd: gekozenTijd, soort: $('#portaal-soort').textContent, moment: $('#portaal-moment').textContent, status: 'aangevraagd' });
+        aanvragen.push({ id: crypto.randomUUID(), ...voorbeeldMoment(dag, gekozenTijd), soort: $('#portaal-soort').textContent, status: 'aangevraagd' });
         bewaar();
         dag = -1;
         gekozenTijd = '';

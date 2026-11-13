@@ -2261,6 +2261,65 @@ a:hover {
   padding-block: 10px;
 }
 
+.bezoek-link {
+  align-items: center;
+  display: inline-flex;
+}
+
+.bezoek-blok {
+  border-top: 1px solid var(--lijn);
+  padding-top: 8px;
+}
+
+.bezoek-blok summary {
+  box-sizing: border-box;
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 8px;
+  font-weight: 700;
+}
+
+.bezoek-blok figure, .bezoek-gegevens, .bezoek-gegevens dd {
+  margin: 0;
+}
+
+.bezoek-blok img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.bezoek-gegevens {
+  gap: 8px;
+  display: grid;
+}
+
+.bezoek-gegevens dt {
+  font-weight: 700;
+}
+
+.wachtlijst-dag {
+  grid-template-columns: minmax(75px, 1fr) repeat(2, minmax(70px, 1fr));
+  align-items: center;
+  gap: 4px;
+  display: grid;
+}
+
+.wachtlijst-dag label {
+  cursor: pointer;
+  align-items: center;
+  gap: 3px;
+  min-height: 44px;
+  display: flex;
+}
+
+.wachtlijst-dag input {
+  accent-color: var(--groen-donker);
+}
+
 .app-veldset {
   border: 0;
   gap: 8px;
