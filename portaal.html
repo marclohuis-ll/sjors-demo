@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="nl" class="saira_72ab08e9-module__WFB2hW__variable atkinson_hyperlegible_next_1604a164-module__YLbFdG__variable">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+  <title>Inloggen · Fysiotherapie Heuvels</title>
+  <link rel="icon" href="./logo/beeldmerk-klein.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./site.css?v=60c561c9b2e2">
+  <script src="./demo.js?v=c44ebe216ade" defer></script>
+</head>
+<body><div class="app demo-portaal">
+  <header class="app-kop">
+    <div>
+      <a class="logo" href="./" aria-label="Fysiotherapie Heuvels, naar de homepage">
+        <img src="./logo/beeldmerk-klein.svg" alt="" width="33" height="42">
+        <span class="merk">Fysiotherapie<b>Heuvels</b></span>
+      </a>
+      <a class="link-knop" href="./">Naar de website</a>
+    </div>
+  </header>
+  <main class="app-main" id="demo-portaal">
+    <section class="kaart inlog-kaart" data-scherm="inlog" aria-labelledby="portaal-kop">
+      <nav class="portaal-rollen" aria-label="Kies je portaal">
+        <a href="./portaal.html" data-rol="patient">Patiënt</a>
+        <a href="./portaal.html?rol=praktijk" data-rol="praktijk">Medewerker / behandelaar</a>
+      </nav>
+      <ol class="inlog-stappen" aria-label="Inlogstappen">
+        <li aria-current="step"><span>1</span> E-mailadres</li>
+        <li><span>2</span> Inlogcode</li>
+      </ol>
+      <div class="app-intro">
+        <h1 id="portaal-kop" tabindex="-1"></h1>
+        <p class="zacht" id="portaal-uitleg"></p>
+      </div>
+      <form class="inlog-form" id="portaal-email-stap">
+        <div class="veld">
+          <label for="portaal-email">Voorbeeldadres</label>
+          <input id="portaal-email" type="email" readonly>
+        </div>
+        <button class="knop app-knop" type="submit" disabled>Toon voorbeeldcode</button>
+      </form>
+      <form class="inlog-form" id="portaal-code-stap" hidden>
+        <div class="veld">
+          <label for="portaal-code">Inlogcode</label>
+          <input id="portaal-code" inputmode="numeric" maxlength="6" autocomplete="off" aria-describedby="portaal-uitleg">
+        </div>
+        <p class="fout" id="portaal-fout" role="alert" hidden></p>
+        <button class="knop app-knop" type="submit">Inloggen</button>
+        <button class="link-knop" type="button" data-actie="terug-inlog">Terug naar e-mailadres</button>
+      </form>
+    </section>
+    <section class="app-blok" data-scherm="afspraken" aria-labelledby="portaal-afspraken" hidden>
+      <div class="app-intro">
+        <h1 id="portaal-afspraken" tabindex="-1"></h1>
+        <p class="zacht" id="portaal-afspraken-uitleg"></p>
+      </div>
+      <div class="acties">
+        <button class="knop app-knop" type="button" data-actie="plannen">Nieuwe afspraak</button>
+        <button class="link-knop" type="button" data-actie="uitloggen">Uitloggen</button>
+      </div>
+      <div class="app-blok" id="portaal-lijsten"></div>
+    </section>
+    <section class="kaart app-blok" data-scherm="planner" aria-labelledby="portaal-planner" hidden>
+      <ol class="inlog-stappen" aria-label="Afspraakstappen">
+        <li><span>1</span> Soort</li><li><span>2</span> Moment</li><li><span>3</span> Aanvragen</li>
+      </ol>
+      <div class="app-intro">
+        <h1 id="portaal-planner" tabindex="-1">Nieuwe afspraak</h1>
+        <p class="zacht">De afspraak staat vast zodra Sjors die bevestigt.</p>
+      </div>
+      <div class="app-blok" data-plan="1">
+        <fieldset class="app-veldset">
+          <legend>Wat voor afspraak wil je maken?</legend>
+          <label class="keuze"><input type="radio" name="demo-type" value="Eerste afspraak"> Eerste afspraak</label>
+          <label class="keuze"><input type="radio" name="demo-type" value="Vervolgafspraak" checked> Vervolgafspraak</label>
+        </fieldset>
+        <div class="acties">
+          <button class="link-knop" type="button" data-actie="afspraken">Terug</button>
+          <button class="knop app-knop" type="button" data-actie="moment">Kies een moment</button>
+        </div>
+      </div>
+      <div class="app-blok" data-plan="2" hidden>
+        <div class="agenda-week">
+          <button class="knop-lijn app-knop" type="button" data-actie="vorige-week" aria-label="Vorige week">‹</button>
+          <p id="portaal-week" aria-live="polite"></p>
+          <button class="knop-lijn app-knop" type="button" data-actie="volgende-week" aria-label="Volgende week">›</button>
+        </div>
+        <div class="agenda-dagen" id="portaal-dagen" role="group" aria-label="Kies een dag"></div>
+        <div class="app-veldset agenda-tijden" id="portaal-tijden" role="group" aria-label="Kies een tijd"></div>
+        <div class="acties">
+          <button class="link-knop" type="button" data-actie="plannen">Terug</button>
+          <button class="knop app-knop" type="button" data-actie="overzicht" disabled>Verder</button>
+        </div>
+      </div>
+      <div class="app-blok" data-plan="3" hidden>
+        <dl class="samenvatting">
+          <div><dt>Soort afspraak</dt><dd id="portaal-soort"></dd></div>
+          <div><dt>Moment</dt><dd id="portaal-moment"></dd></div>
+        </dl>
+        <div class="acties">
+          <button class="link-knop" type="button" data-actie="moment">Terug</button>
+          <button class="knop app-knop" type="button" data-actie="aanvragen">Vraag afspraak aan</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

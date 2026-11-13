@@ -2172,7 +2172,7 @@ a:hover {
   border-bottom: 1px solid var(--lijn);
   color: var(--tekst-3);
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 8px 16px;
   margin: 0;
   padding: 0 0 10px;
   font-size: 14px;
@@ -2189,6 +2189,7 @@ a:hover {
 .inlog-stappen span {
   background: var(--mist);
   border-radius: 50%;
+  flex: none;
   place-items: center;
   width: 22px;
   height: 22px;
@@ -2344,6 +2345,97 @@ a:hover {
 
 .afspraak-portaal :is(h2, p) {
   grid-column: 1 / -1;
+}
+
+.inlog-wissel {
+  justify-self: start;
+  align-items: center;
+  font-size: 15px;
+  display: inline-flex;
+}
+
+.inlog-kaart .inlog-form > .acties {
+  display: grid;
+}
+
+.inlog-kaart .inlog-form > .acties > .knop {
+  justify-self: stretch;
+}
+
+.demo-portaal .kaart {
+  gap: 12px;
+}
+
+.demo-portaal .app-main {
+  max-width: 540px;
+}
+
+.demo-portaal .inlog-form .app-knop {
+  justify-self: stretch;
+}
+
+.demo-portaal .portaal-rollen {
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  display: flex;
+}
+
+.demo-portaal .portaal-rollen a {
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  display: inline-flex;
+}
+
+.demo-portaal .portaal-rollen [aria-current] {
+  font-weight: 700;
+}
+
+.demo-portaal .inlog-stappen {
+  padding-bottom: 8px;
+}
+
+.demo-portaal .app-intro p {
+  line-height: 1.45;
+}
+
+.demo-portaal .agenda-tijden button {
+  font-size: 16px;
+}
+
+.demo-portaal .agenda-tijden button[aria-pressed="true"] {
+  background: var(--groen-zacht);
+  border-color: var(--groen-donker);
+}
+
+@media (max-width: 700px) {
+  .kop-acties {
+    gap: 5px;
+  }
+
+  .kop-acties > .kop-inlog, .inhoud summary {
+    padding-inline: 9px;
+    font-size: 14px;
+  }
+
+  .inhoud summary svg {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .kop .binnen {
+    gap: 6px;
+  }
+
+  .kop .logo {
+    gap: 4px;
+    padding-right: 9px;
+  }
+
+  .kop .logo img {
+    height: 30px;
+  }
 }
 
 @media (max-width: 560px) {
