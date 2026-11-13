@@ -14,8 +14,8 @@ const aanvraagStappen                                           = [
 const meldingen                                 = {
   soort: 'Kies eerst een soort afspraak.',
   naam: 'Vul je voor- en achternaam in.',
-  email: 'Vul een geldig e-mailadres in, bijvoorbeeld naam@voorbeeld.nl.',
-  tel: 'Vul een telefoonnummer van 10 cijfers in, bijvoorbeeld 06 12345678.',
+  email: 'Vul een geldig e-mailadres in.',
+  tel: 'Vul een telefoonnummer van 10 cijfers in.',
   voorkeur: 'Vul in wanneer het je goed uitkomt.',
 };
 
